@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>DETAIL</h2>
+  <h3>{{ todo.pk }} 번째 글</h3>
+  <hr>
+  <p><b>작성자 : {{ todo.user }}</b></p>
+  <p>제목: {{ todo.title }}</p>
+  <p>내용: {{ todo.content }}</p>
+  <p>작성 시각: {{ todo.created_at }}</p>
+  <p>수정 시각: {{ todo.updated_at }}</p>
+  <hr>
+
+  <h3>댓글 목록</h3>
+  <ul>
+    {% for comment in comments %}
+      <li>
+        {{ comment.content}}
+        <form action="{% url 'todos:comments_delete' todoe.pk comment.pk %}" method="POST">
+          {% csrf_token %}
+          <input type="submit" value="DELETE">
+        </form>
+    </li>
+    {% endfor %}
+  </ul>
+  <hr>
+
+  <form action="{% url 'todos:comments_create' todo.pk %}" method='POST'>
+    {% csrf_token %}
+    {{ comment_form }}
+    <input type="submit">
+  </form>
+
+  {% if request.user == todo.user %}
+    <a href="{% url 'todos:update' todo.pk %}">UPDATE</a><br>
+    <form action="{% url 'todos:delete' todo.pk %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="DELETE">
+    </form>
+  {% endif %}
+  <a href="{% url 'todos:index' %}">[back]</a>
+{% endblock content %}
