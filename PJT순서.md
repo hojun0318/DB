@@ -1,6 +1,6 @@
 # 기본 설정
 
-### 가상환경 활성화 - 패키지 설치 - 프로젝트 생성 - 앱 생성
+### 가상환경 활성화 - 패키지 설치 - 프로젝트 생성 - 앱 생성 - admin 사용자 생성
 ```
 python -m venv venv
 
@@ -11,12 +11,15 @@ pip install -r requirements.txt
 django-admin startprojects '생성할 프로젝트 이름' .
 
 python manage.py startapp '생성할 앱 이름'
+
+python manage.py createsuperuser
 ```
 
 ### 프로젝트 파일 \ settings.py
 ```
 INSTALLED_APPS에 '생성한 앱 이름' 추가
 TEMPLATES에서 DIRS에 [BASE_DIR / 'templates',], 추가
+LANGUAGE_CODE = 'ko-kr' 변경하면 한국어
 ```
 
 ### 프로젝트 파일 \ urls.py
@@ -292,3 +295,134 @@ class MovieForm(forms.ModelForm):
     : View 함수가 POST 요청 method만 허용하도록 하는 데코레이터
 - 단순 Cut이 아니라 적절한 응답 상태 코드를 보내주는게 장점이기도 하다.
 ```
+
+# 로그인 설정
+
+### accounts 앱 생성
+```
+python manage.py startapp accounts
+
+'프로젝트 명' \ settings.py의 INSTALLED_APPS에 'accounts, 추가
+'프로젝트 명' \ urls.py의 urlpatterns에 path('accounts/', include('accounts.urls')), 추가
+```
+### 1. accounts \ urls.py
+```
+from django.urls import path
+from . import views
+
+app_name = 'accounts'
+urlpatterns = [
+    path('login/', views.login, name='login'),
+]
+```
+
+### 2. accounts \ views.py
+```
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login as auth_login
+
+def login(request):
+    # POST
+    if request.method == 'POST':
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            auth_login(request, form.get_user())
+            return redirect('movies:index')
+    # GET
+    else:
+        form = AuthenticationForm()
+    context = {
+        'form': form, 
+    }
+    return render(request, 'accounts/login.html', context)
+```
+
+### 3. accounts \ templates \ accounts \ login.html
+```
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>LOGIN</h1>
+  <form action="{% url 'accounts:login' %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p}}
+    <input type="submit">
+  </form>
+{% endblock content %}
+```
+
+# 로그아웃 설정
+
+### 1. accounts \ urls.py
+```
+path('logout/', views.logout, name='logout'),
+```
+
+### 2. accounts \ views.py
+```
+def logout(request):
+    auth_logout(request)
+    return redirect('movies:index')
+```
+
+# 회원가입
+
+### 1. accounts \ urls.py
+```
+path('signup/', views.signup, name='signup'),
+```
+
+### 2-1. accounts \ models.py
+```
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+# Create your models here.
+class User(AbstractUser):
+    pass
+```
+
+### 2-2. accounts \ forms.py
+```
+forms.py 생성
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import get_user_model
+
+
+class CustomUserCreationForm(UserCreationForm):
+
+    class Meta(UserCreationForm.Meta):
+        model = get_user_model
+```
+
+### 3. accounts \ views.py
+```
+def signup(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('movies:index')
+    else:
+        form = CustomUserCreationForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'accounts/signup.html', context)
+```
+
+### 4. accounts \ templates \ accounts \ signup.html
+```
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>SIGNUP</h1>
+  <form action="{% url 'accounts:signup' %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p}}
+    <input type="submit">
+  </form>
+{% endblock content %}
+```
+
