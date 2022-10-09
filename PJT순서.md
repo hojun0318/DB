@@ -169,11 +169,13 @@ def detail(request, pk):
 
 
 def create(request):
+    # 데이터베이스에 접근하는 핵심 코드들을 POST일때만 따로 빼버리고 
     if request.method == 'POST':
         form = MovieForm(request.POST)
         if form.is_valid():
             movie = form.save()
             return redirect('movies:detail', movie.pk)
+    # 관련없는 일반적인 코드들은 else문으로 퉁치겠다.
     else:
         form = MovieForm()
 
@@ -217,3 +219,76 @@ def delete(request, pk):
 {% endblock content %}
 ```
 
+# 5. '생성한 앱' \ forms.py
+```
+from django import forms
+from .models import Movie
+
+class MovieForm(forms.ModelForm):
+    genre_1 = '코미디'
+    genre_2 = '공포/스릴러'
+    genre_3 = '액션'
+    genre_4 = '전쟁'
+    genre_5 = 'SF'
+    genre_6 = '느와르'
+    genre_7 = '스포츠'
+    genre_8 = '뮤지컬'
+    genre_9 = '로맨스'
+    genre_10 = '드라마'
+
+    GENRE_CASE = [
+        (genre_1, '코미디'),
+        (genre_2, '공포/스릴러'),
+        (genre_3, '액션'),
+        (genre_4, '전쟁'),
+        (genre_5, 'SF'),
+        (genre_6, '느와르'),
+        (genre_7, '스포츠'),
+        (genre_8, '뮤지컬'),
+        (genre_9, '로맨스'),
+        (genre_10, '드라마'),
+    ]
+    # widget은 input 요소의 표현만 바꾼다. 유효성 검사와 아무런 관련이 없다.
+    # [알아두기] widget=forms.RadioSelect (체크박스)
+    genre = forms.ChoiceField(choices=GENRE_CASE, widget=forms.Select())
+
+    score = forms.FloatField(
+        widget=forms.NumberInput(
+            attrs={
+                'step': '.1',
+                'min': '0',
+                'max': '10',
+            }
+        )
+    )
+
+    release_date = forms.DateField(
+        widget=forms.DateInput(
+            attrs={'type': 'date'}
+        )
+    )
+
+    class Meta:
+        model = Movie
+        fields = '__all__'
+
+# 결국 사용자의 입력을 받는 부분은 앞으로 form class에서 수정/추가 해야한다.
+```
+
+# View Decorators
+```
+@require_safe
+    : GET인 요청에 대해서만 이 View 함수에서 쓸 수 있도록 한다. GET이 아니면 View 함수 실행까지 못가고 응답 상태 코드를 하나 주는데 405 Method Not Allowed 이다.
+- 요청 방법이 서버에게 전달 되었으나 사용 불가능한 상태를 뜻한다.
+- 4는 Client 잘못을 뜻한다.
+
+
+@require_http_methods()
+    : View 함수가 특정한 요청 method만 허용하도록 하는 데코레이터
+    ex) @require_http_method(['GET', 'POST'])
+    : GET과 POST를 제외한 다른 요청은 전부다 Cut 된다.
+
+@require_POST
+    : View 함수가 POST 요청 method만 허용하도록 하는 데코레이터
+- 단순 Cut이 아니라 적절한 응답 상태 코드를 보내주는게 장점이기도 하다.
+```
