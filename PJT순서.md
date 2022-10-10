@@ -303,6 +303,9 @@ class MovieForm(forms.ModelForm):
 python manage.py startapp accounts
 
 '프로젝트 명' \ settings.py의 INSTALLED_APPS에 'accounts, 추가
+
+'프로젝트 명' \ settings.py에 AUTH_USER_MODEL = 'accounts.User' 추가
+
 '프로젝트 명' \ urls.py의 urlpatterns에 path('accounts/', include('accounts.urls')), 추가
 ```
 ### 1. accounts \ urls.py
@@ -352,6 +355,15 @@ def login(request):
 {% endblock content %}
 ```
 
+### 4. templates \ base.html
+```
+<h6>환영합니다. {{ user }}님!</h6>
+  <form action="{% url 'accounts:login' %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="LOGIN">
+  </form>
+```
+
 # 로그아웃 설정
 
 ### 1. accounts \ urls.py
@@ -364,6 +376,14 @@ path('logout/', views.logout, name='logout'),
 def logout(request):
     auth_logout(request)
     return redirect('movies:index')
+```
+
+### 3. templates \ base.html
+```
+<form action="{% url 'accounts:logout' %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="LOGOUT">
+</form>
 ```
 
 # 회원가입
@@ -386,23 +406,33 @@ class User(AbstractUser):
 ### 2-2. accounts \ forms.py
 ```
 forms.py 생성
-from django.contrib.auth.forms import UserCreationForm
+
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth import get_user_model
 
 
 class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
-        model = get_user_model
+        model = get_user_model()
+        fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name')
+
+class CustomUserChangeForm(UserChangeForm):
+
+    class Meta(UserChangeForm.Meta):
+        model = get_user_model()
 ```
 
 ### 3. accounts \ views.py
 ```
+# 회원 가입
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            # 회원가입 후 로그인
+            auth_login(request, user)
             return redirect('movies:index')
     else:
         form = CustomUserCreationForm()
@@ -426,3 +456,229 @@ def signup(request):
 {% endblock content %}
 ```
 
+### 5. templates \ base.html
+```
+<form action="{% url 'accounts:signup' %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="SIGNUP">
+</form>
+```
+
+# 회원탈퇴
+
+### 1. accounts \ urls.py
+```
+path('delete/', views.delete, name='delete'),
+```
+
+### 2. accounts \ views.py
+```
+def delete(request):
+    request.user.delete()
+    auth_logout(request)       # 세션에 남아있는 기록도 삭제
+    return redirect('movies:index')
+```
+
+### 3. templates \ base.html
+```
+<form action="{% url 'accounts:delete' %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="WITHDRAWAL">
+</form>
+```
+
+# 회원정보 수정
+
+### 1. accounts \ urls.py
+```
+path('update/', views.update, name='update'),
+```
+
+### 2. accounts \ forms.py
+```
+class CustomUserChangeForm(UserChangeForm):
+
+    class Meta(UserChangeForm.Meta):
+        model = get_user_model()
+        fields = ('email', 'first_name', 'last_name',)
+```
+
+### 3. accounts \ views.py
+```
+from .forms import CustomUserCreationForm, CustomUserChangeForm
+
+def update(request):
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('movies:index')
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+    context = {
+        'form': form,
+    }
+    return render(request, 'accounts/update.html', context)
+```
+
+### 4. accounts \ templates \ accounts \ update.html
+```
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>MODIFYING MEMBER INFORMATION</h1>
+  <form action="{% url 'accounts:update' %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p}}
+    <input type="submit" value="COMPLETE">
+  </form>
+{% endblock content %}
+```
+
+### 5. templates \ base.html
+```
+<form action="{% url 'accounts:update' %}">
+    {% csrf_token %}
+    <input type="submit" value="MODIFY">
+</form>
+```
+
+# 비밀번호 변경
+
+### 1. accounts \ urls.py
+```
+path('password/', views.change_password, name='change_password'),
+```
+
+### 2. accounts \ views.py
+```
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+
+def change_password(request):
+    if request.method == 'POST':
+        # 독특하게 인자 순서가 다름
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('movies:index')
+    else:
+        form = PasswordChangeForm(request.user)
+    context = {
+        'form': form,
+    }
+    return render(request, 'accounts/change_password.html', context)
+```
+```
+# update_session_auth_hash(request, user)
+    암호가 변경되어도 로그아웃 되지 않도록 새로운 password의 sessiong data로 sessiong을 업데이트
+
+from django.contrib.auth import update_session_auth_hash    # import 해주고
+
+if form.is_valid():
+    form.save()
+    update_session_auth_hash(request, form.user)
+    return redirect('movies:index')
+# save() 다음에 함수 넣어주기
+```
+### 3. accounts \ templates \ accounts \ change_password.html
+```
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>MODYING PASSWORD NUMBER</h1>
+  <form action="{% url 'accounts:change_password' %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p}}
+    <input type="submit", value="COMPLETE">
+  </form>
+{% endblock content %}
+```
+
+# Limiting access to logged-in users
+## is_authenticated
+
+### 1. templates \ base.html
+```
+    로그인된 사용자(True)인지 비로그인 사용자(False)인지 딱 그것만 구분
+- 권한(permission)과는 관련이 없으며, 사용자가 활성화 상태(active)이거나 유효한 세션(valid session)을 가지고 있는지도 확인하지 않음
+```
+```
+<body class='container'>
+  {% if request.user.is_authenticated %}
+    <h6>환영합니다. {{ user }}님!</h6>
+
+    {% comment %} 로그아웃 {% endcomment %}
+    <form action="{% url 'accounts:logout' %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="LOGOUT">
+    </form>
+
+    {% comment %} 회원탈퇴 {% endcomment %}
+    <form action="{% url 'accounts:delete' %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="WITHDRAWAL">
+    </form>
+
+    {% comment %} 회원정보 수정 {% endcomment %}
+    {% comment %} <a href="{% url 'accounts:update' %}">Modify</a> {% endcomment %}
+    <form action="{% url 'accounts:update' %}">
+      {% csrf_token %}
+      <input type="submit" value="MODIFY">
+    </form>
+  
+  {% else %}
+    {% comment %} 로그인 {% endcomment %}
+    {% comment %} <a href="{% url 'accounts:login' %}">Login</a> {% endcomment %}
+    <form action="{% url 'accounts:login' %}" method="POST">  
+      {% csrf_token %}
+      <input type="submit" value="LOGIN">
+    </form>
+
+    {% comment %} <a href="{% url 'accounts:signup' %}">Signup</a> {% endcomment %}
+    <form action="{% url 'accounts:signup' %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="SIGNUP">
+    </form>
+  {% endif %}
+  <hr>
+  {% block content %}
+  {% endblock content %}
+  ```
+
+### 2. accounts \ views.py
+```
+if request.user.is_authenticatied:
+    return redirect('movies:index')
+# login 함수 제일 위에 추가하기
+```
+
+# 로그인된 사용자만 글 작성하기
+
+### 1. movies \ templates \ index.html
+```
+{% if request.user.is_authenticated %}
+    <a href="{% url 'movies:create' %}"></a>
+    <button type="button" class="btn btn-primary">CREATE</button>
+{% endif %}
+# if문에 create 넣기
+```
+
+# decorator를 사용해서 로그인된 사용자만 글 작성하기
+
+### 1. movies \ views.py
+```
+create, update, delete에 @login_required 붙여주기
+```
+
+## Login 함수에서 next parameter 처리 방법
+### 2-1 accounts \ templates \ accounts \ login.html
+```
+url 주소 삭제
+from action=""
+```
+### 2-2. accounts \ views.py
+```
+if form.is_valid():
+    auth_login(request, form.get_user())
+    return redirect(request.GET.get('next') or 'movies:index')
+```
