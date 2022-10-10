@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+</head>
+<body class='container'>
+  <nav class="navbar navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'movies:index' %}">
+        <img src="https://user-images.githubusercontent.com/89068148/162368167-220a2ca2-6df9-4473-b89b-31981a62332b.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
+        SSAFY MOVIE
+        <h6 class="container d-flex col">환영합니다. {{ user }}님!</h6>
+      </a>
+      <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="제목을 입력하세요" aria-label="search">
+        <button class="btn btn-outline-success" type="submit">Go!</button>
+      </form>
+    </div>
+  </nav>
+
+  {% if request.user.is_authenticated %}
+    <div class="container d-flex col">
+      {% comment %} 로그아웃 {% endcomment %}
+      <form action="{% url 'accounts:logout' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-dark" value="LOGOUT">
+      </form>
+
+      {% comment %} 회원정보 수정 {% endcomment %}
+      {% comment %} <a href="{% url 'accounts:update' %}">Modify</a> {% endcomment %}
+      <form action="{% url 'accounts:update' %}">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-info" value="MODIFY">
+      </form>
+  
+      {% comment %} 회원탈퇴 {% endcomment %}
+      <form action="{% url 'accounts:delete' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-danger" value="WITHDRAWAL">
+      </form>
+    </div>
+  
+  {% else %}
+  <div class="container d-flex col">
+    {% comment %} 로그인 {% endcomment %}
+    {% comment %} <a href="{% url 'accounts:login' %}">Login</a> {% endcomment %}
+    <form action="{% url 'accounts:login' %}" method="POST">  
+      {% csrf_token %}
+      <input type="submit" class="btn btn-primary" value="LOGIN">
+    </form>
+
+    {% comment %} <a href="{% url 'accounts:signup' %}">Signup</a> {% endcomment %}
+    <form action="{% url 'accounts:signup' %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" class="btn btn-success" value="SIGNUP">
+    </form>
+  </div>
+  {% endif %}
+  <hr>
+  <div class="container">
+    {% block content %}
+    {% endblock content %}
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+</body>
+</html>
