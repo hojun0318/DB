@@ -4,6 +4,8 @@
 ```
 python -m venv venv
 
+ctrl + shift + p -> Interpreter -> Python 3.9.9('venv': venv)
+
 source venv/Scripts/activate
 
 pip install -r requirements.txt

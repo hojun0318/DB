@@ -30,7 +30,7 @@ def detail(request, pk):
 @require_http_methods(['GET', 'POST'])
 def create(request):
     if request.method == 'POST':
-        form = MovieForm(request.POST)
+        form = MovieForm(request.POST, request.FILES)
         if form.is_valid():
             movie = form.save(commit=False)
             movie.user = request.user
@@ -49,7 +49,7 @@ def update(request, pk):
     movie = Movie.objects.get(pk=pk)
     if request.user == movie.user:
         if request.method == "POST":
-            form = MovieForm(request.POST, instance=movie)
+            form = MovieForm(request.POST, request.FILES, instance=movie)
             if form.is_valid():
                 movie = form.save()
                 return redirect('movies:detail', movie.pk)
