@@ -14,6 +14,7 @@ def index(request):
     }
     return render(request, 'movies/index.html', context)
 
+
 @require_safe
 def detail(request, pk):
     movie = Movie.objects.get(pk=pk)
@@ -25,6 +26,7 @@ def detail(request, pk):
         'comments' : comments,        
     }
     return render(request, 'movies/detail.html', context)
+
 
 @login_required
 @require_http_methods(['GET', 'POST'])
@@ -42,6 +44,7 @@ def create(request):
         'form': form,
     }
     return render(request, 'movies/create.html', context)
+
 
 @login_required
 @require_http_methods(['GET', 'POST'])
@@ -63,14 +66,6 @@ def update(request, pk):
     }
     return render(request, 'movies/update.html', context)
 
-# @login_required
-# @require_POST
-# def delete(request, pk):
-#     movie = Movie.objects.get(pk=pk)
-#     if request.method == 'POST':
-#         movie.delete()
-#         return redirect('movies:index')
-#     return redirect('movies:detail', movie.pk)
 
 @require_POST
 def delete(request, pk):
@@ -102,3 +97,22 @@ def comments_delete(request, movie_pk, comment_pk):
         if request.user == comment.user:
             comment.delete()
     return redirect('movies:detail', movie_pk)
+
+
+@require_POST
+def likes(request, movie_pk):
+    if request.user.is_authenticated:
+        movie = Movie.objects.get(pk=movie_pk)
+        
+        # 현재 게시글에 좋아요를 누른 유저중에 현재 좋아요를 요청하는 유저를 검색해서 존재하는지를 확인
+        if movie.like_users.filter(pk=request.user.pk).exists():
+
+        # 현재 게시글에 좋아요를 누른 유저 목록에 현재 좋아요를 요청하는 유저가 있는지 없는지 확인
+        # if request.user in movie.like_users.all():
+            # 좋아요 취소 (remove)
+            movie.like_users.remove(request.user)
+        else:
+            # 좋아요 추가 (add)
+            movie.like_users.add(request.user)
+        return redirect('movies:index')
+    return redirect('accounts:login')

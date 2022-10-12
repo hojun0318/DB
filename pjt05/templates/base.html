@@ -7,6 +7,7 @@
   <title>Document</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 </head>
+
 <body class='container'>
   <nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
@@ -24,10 +25,9 @@
 
   {% if request.user.is_authenticated %}
     <div class="container d-flex col">
-      {% comment %} 로그아웃 {% endcomment %}
-      <form action="{% url 'accounts:logout' %}" method="POST">
+      <form action="{% url 'accounts:profile' user.username %}">
         {% csrf_token %}
-        <input type="submit" class="btn btn-dark" value="LOGOUT">
+        <input type="submit" class="btn btn-primary" value="MY PROFILE">
       </form>
 
       {% comment %} 회원정보 수정 {% endcomment %}
@@ -36,7 +36,13 @@
         {% csrf_token %}
         <input type="submit" class="btn btn-info" value="MODIFY">
       </form>
-  
+      
+      {% comment %} 로그아웃 {% endcomment %}
+      <form action="{% url 'accounts:logout' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" class="btn btn-dark" value="LOGOUT">
+      </form>
+
       {% comment %} 회원탈퇴 {% endcomment %}
       <form action="{% url 'accounts:delete' %}" method="POST">
         {% csrf_token %}

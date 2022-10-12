@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ person.username }}'s PROFILE</h1>
+
+    <div>
+        FOLLOWER : {{ person.followers.all|length }} / FOLLOWING : {{ person.followings.all|length }}
+        {% if request.user != person %}
+            <form action="{% url 'accounts:follow' person.pk %}" method="POST">
+                {% csrf_token %}
+                {% if request.user in person.followers.all %}
+                    <input type="submit" class="btn btn-danger" value="UNFOLLOW">
+                {% else %}
+                    <input type="submit" class="btn btn-success" value="FOLLOW">
+                {% endif %}
+            </form>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    {% if request.user != person %}
+    <div>
+      <h2>{{ person.username }}'s POSTS</h2>
+        {% for movie in person.movie_set.all %}
+          <div>{{ movie.title }}</div>
+        {% endfor %}
+    {% else %}
+      <h2>{{ person.username }}'s POSTS</h2>
+        {% for movie in person.movie_set.all %}
+          <div>{{ movie.title }}</div>
+        {% endfor %} 
+    </div>
+    {% endif %}
+
+    <hr>
+
+    <div>
+      <h2>{{ person.username }}'s COMMENTS</h2>
+        {% for comment in person.comment_set.all %}
+          <div>{{ comment.content }}</div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <div>
+      <h2>{{ person.username }}, POSTS THAT YOU CLICKED "LIKE"</h2>
+        {% for movie in person.like_movies.all %}
+          <div>{{ movie.title }}</div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <a href="{% url 'movies:index' %}">
+        <button type="button" class="btn btn-warning">BACK</button>
+    </a>
+{% endblock content %}

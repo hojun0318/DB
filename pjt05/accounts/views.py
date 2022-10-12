@@ -1,5 +1,6 @@
 from ast import Pass
 from django.shortcuts import render, redirect
+from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
@@ -95,3 +96,31 @@ def change_password(request):
         'form': form,
     }
     return render(request, 'accounts/change_password.html', context)
+
+
+def profile(request, username):
+    User = get_user_model()
+    person = User.objects.get(username=username)
+    context = {
+        'person': person,
+    }
+    return render(request, 'accounts/profile.html', context)
+
+
+@require_POST
+def follow(request, user_pk):
+    if request.user.is_authenticated:
+        User = get_user_model()
+        person = User.objects.get(pk=user_pk)
+        if person != request.user:
+            # 너의 팔로우 목록에 나의 pk가 있다면
+            if person.followers.filter(pk=request.user.pk).exists():
+            # 내가 (request.user)그 사람의 팔로워 목록에 있다면
+            #if request.user in person.followers.all():
+                person.followers.remove(request.user)
+                # 언팔로우
+            else:
+                person.followers.add(request.user)
+                # 팔로우
+        return redirect('accounts:profile', person.username)
+    return redirect('accounts:login')
