@@ -4,7 +4,19 @@
     <h1>{{ person.username }}'s PROFILE</h1>
 
     <div>
-        FOLLOWER : {{ person.followers.all|length }} / FOLLOWING : {{ person.followings.all|length }}
+        FOLLOWER : {{ person.followers.all|length }}
+        {% if person.followers %}
+          {% for follower in person.followers.all %}
+            <b>'{{follower}}'</b>
+          {% endfor %}
+        {% endif %} 
+        / FOLLOWING : {{ person.followings.all|length }}
+        {% if person.followings %}
+          {% for following in person.followings.all %}
+            <b>'{{following}}'</b>
+          {% endfor %}
+        {% endif %}
+        
         {% if request.user != person %}
             <form action="{% url 'accounts:follow' person.pk %}" method="POST">
                 {% csrf_token %}
@@ -22,7 +34,7 @@
     <div>
       <h2>{{ person.username }}'s POSTS</h2>
         {% for movie in person.movie_set.all %}
-          <div>{{ movie.title }}</div>
+          <div>[{{ movie.title }}, <b>{{ movie.like_users.all|length }} likes ]</b></div> 
         {% endfor %}
     {% comment %} {% else %}
       <h2>{{ person.username }}'s POSTS</h2>

@@ -16,7 +16,7 @@
       <p> Genre : {{ movie.genre }}</p>
       <p> Score : {{ movie.score }}</p>
       <p> {{ movie.description }} </p>
-      <p> Writer : {{ movie.user }}</p>
+      <p style='font-weight: bold'><b>Writer : <a href="{% url 'accounts:profile' movie.user.username %}">{{ movie.user }}</a></b></p>
       <div class="container d-flex col">
         {% if request.user == movie.user %}  
           <a href="{% url 'movies:update' movie.pk %}" style="margin:1%;">
