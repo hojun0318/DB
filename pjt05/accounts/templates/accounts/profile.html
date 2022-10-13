@@ -19,19 +19,17 @@
 
     <hr>
 
-    {% if request.user != person %}
     <div>
       <h2>{{ person.username }}'s POSTS</h2>
         {% for movie in person.movie_set.all %}
           <div>{{ movie.title }}</div>
         {% endfor %}
-    {% else %}
+    {% comment %} {% else %}
       <h2>{{ person.username }}'s POSTS</h2>
         {% for movie in person.movie_set.all %}
           <div>{{ movie.title }}</div>
-        {% endfor %} 
+        {% endfor %}  {% endcomment %}
     </div>
-    {% endif %}
 
     <hr>
 

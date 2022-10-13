@@ -28,13 +28,17 @@ app_name/fixtures/ (기본경로)
 # 작성 예시
 python manage.py dumpdata 앱이름.모델이름 > 앱이름.json
 
+- 인코딩 문제 해결
+    python -Xutf8 manage.py dumpdata > test2.json
 
 manage.py와 동일한 위치에 data가 담긴 articles.json 파일이 생성됨
 
 dumpdata의 출력 결과물은 loaddata의 입력으로 사용됨
 
 Ex) python manage.py dumpdata --indent 4 articles.article > articles.json
+
     python manage.py dumpdata --indent 4 movies.movie > movies.json
+    python -Xutf8 manage.py dumpdata movies.comment > comments.json
     python manage.py dumpdata --indent 4 accounts.user > users.json
 ```
 

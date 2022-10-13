@@ -12,6 +12,8 @@ class MovieForm(forms.ModelForm):
     genre_8 = '뮤지컬'
     genre_9 = '로맨스'
     genre_10 = '드라마'
+    genre_11 = '모험'
+    genre_12 = '애니메이션'
 
     GENRE_CASE = [
         (genre_1, '코미디'),
@@ -24,6 +26,8 @@ class MovieForm(forms.ModelForm):
         (genre_8, '뮤지컬'),
         (genre_9, '로맨스'),
         (genre_10, '드라마'),
+        (genre_11, '모험'),
+        (genre_12, '애니메이션'),
     ]
 
     title = forms.CharField(
