@@ -247,3 +247,505 @@ CREATE TABLE table_name (
 ```
 
 # ALTER TABLE
+- 기존 테이블의 구조를 수정(변경)
+```
+# 1. Rename a table
+'ALTER TABLE' table_name 'RENAME TO' new_table_name;
+
+# 2. Rename a column
+'ALTER TABLE' table_name 'RENAME COLUMN' column_name 'TO' new_column_name;
+
+# 3. Add a new column to a table
+'ALTER TABLE' table_name 'ADD COLUMN' column_definition 'NOT NULL DEFAULT' 'no address';
+    이렇게 하면 address 컬럼이 추가되면서 기존에 있던 데이터들의 address 컬럼값은 'no address'가 됨
+# 4. Delete a column
+'ALTER TABLE' table_name 'DROP COLUMN' column_name;
+    단, 삭제하지 못하는 경우가 있음
+        - 컬럼이 다른 부분에서 참조되는 경우
+            - FOREIGN KEY(외래 키) 제약조건에서 사용되는 경우
+        - PRIMARY KEY인 경우
+        - UNIQUE 제약 조건이 있는 경우
+```
+
+# DROP TABLE
+```
+# 데이터베이스에서 테이블을 제거
+'DROP TABLE' table_name;
+
+# 존재하지 않는 테이블을 제거하면 SQLite에서 오류가 발생
+no such table: table_name
+
+한 번에 하나의 테이블만 삭제할 수 있음
+
+여러 테이블을 제거하려면 여러 DROP TABLE 문을 실행해야 함
+
+DROP TABLE 문은 실행 취소하거나 복구할 수 었다. 따라서 각별히 주의하여 수행해야 함
+```
+
+# DML
+```
+DML을 통해 데이터를 조작하기 (CRUD)
+
+INSERT, SELECT, UPDATE, DELETE
+```
+
+- 사전 준비
+```
+CREATE TABLE users (
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    country TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    balance INTEGER NOT NULL,
+)
+```
+
+### Simple query
+- SELECT 문을 사용하여 간단하게 단일 테이블에서 데이터를 조회하기
+```
+# 예시
+SELECT column1, column2 FROM table_name;
+
+특정 테이블에서 데이터를 조회하기 위해 사용
+
+문법 규칙
+    - SELECT 절에서 컬럼 또는 쉼표로 구분된 컬럼 목록을 지정
+    - FROM 절(clause)에서 데이터를 가져올 테이블을 지정
+
+다양한 절과 함께 사용할 수 있으며 하나씩 학습할 예정
+    1. ORDER BY
+    2. DISTINCT
+    3. WHERE
+    4. LIMIT
+    5. LIKE
+    6. GROUP BY
+```
+```
+# 이름과 나이 조회하기
+SELECT first_name, age FROM users;
+
+# 전체 데이터 조회하기
+SELECT * FROM users;
+
+# rowid 컬럼은 다음과 같이 조회할 수 있음
+SELECT rowid, first_name FROM users;
+```
+
+### Sorting rows
+- ORDER BY 절을 사용하여 쿼리의 결과를 정렬하기
+```
+# 예시
+SELECT select_list FROM table_name ORDER BY column_1 ASC, column_2 DESC;
+
+SELECT 문에 추가하여 결과를 정렬
+
+ORDER BY 절은 FROM 절 뒤에 위치함
+
+하나 이상의 컬럼을 기준으로 결과를 오름차순, 내림차순으로 정렬할 수 있음
+
+이를 위해 ORDER BY 절 다음에 'ASC' 또는 'DESC' 키워드를 사용
+    - ASC : 오름차순 (기본 값)
+    - DESE : 내림차순
+
+```
+```
+# 이름과 나이를 나이가 어린 순서대로 조회하기
+SELECT first_name, age FROM users ORDER BY age ASC;
+
+SELECT first_name, age FROM users ORDER BY age;
+
+# 이름과 나이를 나이가 많은 순서대로 조회하기
+SELECT first_name, age FROM users ORDER BY age DESC;
+
+# 이름, 나이, 계좌 잔고를 나이가 어린순으로, 만약 같은 나이라면 계좌 잔고가 많은 순으로 정렬해서 조회하기
+SELECT first_name, age, balance FROM users OREDR BY age ASC, balance DESC;
+
+정렬과 관려하여 SQLite는 NULL을 다른 값보다 작은 것으로 간주
+
+즉, ASC를 사용하는 경우 결과의 시작 부분에 NULL이 표시되고, DESC를 사용하는 경우 결과의 끝에 NULL이 표시됨
+```
+
+### Filtering data
+- 데이터를 필터링하여 중복 제거, 조건 설정 등 쿼리를 제어하기
+- Clause
+    - SELECT DISTINCT
+    - WHERE
+    - LIMIT
+
+- Operator
+    - LIKE
+    - IN
+    - BETWEEN
+
+**SELECT DISTINCT clause**
+```
+# 조회 결과에서 중복된 행을 제거
+SELECT DISTINCT select_list FROM table_name;
+
+DISTINCT 절은 SELECT에서 선택적으로 사용할 수 있는 절
+
+문법 규칙
+    - DISTINCT 절은 SELECT 키워드 바로 뒤에 나타나야 함
+    - DISTINCT 키워드 뒤에 컬럼 또는 컬럼 목록을 작성
+```
+```
+# 모든 지역 조회하기
+SELECT country FROM users;
+
+# 중복없이 보든 지역 조회하기
+SELECT DISTINCT country FROM users;
+
+# 지역 순으로 오름차순 정렬하여 중복없이 모든 지역 조회하기
+SELECT DISTINCT country FROM users ORDER BY country;
+
+# 이름과 지역이 중복 없이 모든 이름과 지역 조회하기
+SELECT DISTINCT first_name, country FROM users;
+    각 컬럼의 중복을 따로 계산하는 것이 아니라 두 컬럼을 하나의 집합으로 보고 중복을 제거
+
+# 이름과 지역 중복 없이 지역 순으로 오름차순 정렬하여 모든 이름과 지역 조회하기
+SELECT DISTINCT first_name, country FROM users OREDR BY country;
+
+SQLite는 NULL 값을 중복으로 간주
+
+NULL 값이 있는 컬럼에 DISTINCT 절을 사용하면 SQLite는 NULL 값의 한 행을 유지
+```
+
+**WHERE clause**
+```
+# 조회 시 특정 검색 조건을 지정
+SELECT column_list FROM users WHERE search_condition;
+
+WHERE 절은 SELECT 문에서 선택적으로 사용할 수 있는 절
+    - SELECT 문 외에도 UPDATE 및 DELETE 문에서 WHERE 절을 사용할 수 있음
+FROM 절 뒤에 작성
+```
+```
+# 작성 예시
+WHERE column_1 = 10
+
+WHERE column_2 LIKE 'Ko%'
+
+WHERE column_3 IN (1, 2)
+
+WHERE column_4 BETWEEN 10 AND 20
+```
+```
+# 나이가 30살 이상인 사람들의 이름, 나이, 계좌 잔고 조회하기
+SELECT first_name, age, balance FROM users WHERE age >= 30;
+
+# 나이가 30살 이상이고 계좌 잔고가 50만원 초과인 사람들의 이름, 나이, 계좌 잔고 조회하기
+SELECT first_name, age, balance FROM users WHERE age >= 30 AND balanve > 500000;
+```
+
+**LIKE operator**
+```
+패턴 일치를 기반으로 데이터를 조회
+
+SELECT, DELETE, UPDATE 문의 WHERE 절에서 사용
+
+기본적으로 대소문자를 구분하지 않음
+    - 'A' LIKE 'a' 는 true
+
+SQLite는 패턴 구성을 위한 두 개의 와일드 카드(wildcards)를 제공
+
+1. % (percent)
+    - 0개 이상의 문자가 올 수 있음을 의미
+
+# '%' wildcard 예시
+    - '영%' 패턴은 영으로 시작하는 모든 문자열과 일치 (영, 영미, 영미리 등)
+    - '%도' 패턴은 도로 끝나는 모든 문자열과 일치 (도, 수도, 경기도 등)
+    - '%강원%' 패턴은 강원을 포함하는 모든 문자열과 일치 (강원, 강원도, 강원도에 살아요 등)
+
+2. _ (underscore)
+    - 단일(1개) 문자가 있음을 의미
+
+# '_' wildcard 예시
+    - '영_' 패턴은 영으로 시작하고 총 2자리인 문자열과 일치 (영미, 영수, 영호 등)
+    - '_도' 패턴은 도로 끝나고 총 2자라인 문자열과 일치 (수도, 과도 등)
+```
+```
+Wildcard 종합 예시
+2%              2로 시작하는 패턴
+%2              2로 끝나는 패턴
+%2%             2를 포함하는 패턴
+_2%             첫번째 자리에 아무 값이 하나 있고 두 번째가 2로 시작하는 패턴 (최소 2자리)
+1___            1로 시작하는 4자리 패턴 (반드시 4자리)
+2_%_% or 2__%   2로 시작하고 최소 3자리인 패턴 (3자리 이상)
+
+파일을 지정할 때, 구체적인 이름 대신에 여러 파일을 동시에 지정할 목적으로 사용하는 특수 기호
+    *, ? 등
+
+주로 특정한 패턴이 있는 문자열 혹은 파일을 찾거나, 긴 이름을 생략할 때 쓰임
+
+텍스트 값에서 알 수 없는 문자를 사용할 수 있는 특수 문자로, 유사하지만 동일한 데이터가 아닌 여러 항목을 찾기에 매우 편리한 문자
+
+지정된 패턴 일치를 기반으로 데이터를 수집하는 데도 도움이 될 수 있음
+```
+```
+# 이름에 '호'가 포함되는 사람들의 이름과 성 조회하기
+SELECT first_name, last_name FROM users WHERE first_name LIKE '%호%';
+
+# 이름이 '준'으로 끝나는 사람들의 이름 조회하기
+SELECT first_name FROM users WHERE first_name LIKE '%준';
+
+# 서울 지역 전화번호를 가진 사람들의 이름과 전화번호 조회하기
+SELECT first_name, phone FROM users WHERE phone LIKE '02-%';
+
+# 나이가 20대인 사람들의 이름과 나이 조회하기
+SELECT first_name, age FROM users WHERE age LIKE '2_%';
+
+# 전화번호 중간 4자리가 51로 시작하는 사람들의 이름과 전화번호 조회하기
+SELECT first_name, phone FROM users WHERE phone LIKE '%-51__-%';
+```
+
+**IN operator**
+```
+값이 값 목록 결과에 있는 값과 일치하는 지 확인
+
+표현식이 값 목록의 값과 일치하는지 여부에 따라 true 또는 false를 반환
+
+IN 연산자의 결과를 부정하려면 NOT IN 연산자를 사용
+```
+```
+# 경기도 혹은 강원도에 사는 사람들의 이름과 지역 조회하기
+SELECT first_name, country FROM users WHERE country IN ('경기도', '강원도');
+
+SELECT first_name, country FROM users WHERE country = '경기도' OR country = '강원도';
+    - IN 연산자 대신 OR 연산자를 사용하여 동일한 결과를 반환할 수 있음
+
+# 경기도 혹은 강원도에 살지 않는 사람들의 이름과 지역 조회하기
+SELECT first_name, country FROM users WHERE country NOT IN ('경기도', '강원도');
+```
+
+**BETWEEN operator**
+```
+값이 값 범위에 있는지 테스트
+
+값이 지정된 범위에 있으면 true를 반환
+
+SELECT, DELETE 및 UPDATE 문의 WHERE 절에서 사용할 수 있음
+
+BETWEEN 연산자의 결과를 부정하려면 NOT BETWEEN 연산자를 사용
+```
+```
+# 나이가 20살 이상, 30살 이하인 사람들의 이름과 나이 조회하기
+SELECT first_name, age FROM users WHERE age BETWEEN 20 AND 30;
+
+SELECT first_name, age FROM users WHERE age >= 20 AND age <= 30;
+    - AND 연산자를 사용하여 이전 쿼리와 동일한 결과를 반환할 수 있음
+
+# 나이가 20살 이상, 30살 이하가 아닌 사람들의 이름과 나이 조회하기
+SELECT frist_name, age FROM users WHERE age NOT BETWEEN 20 AND 30;
+
+SELECT first_name, age FROM users WHERE age < 20 OR age > 30;
+    - OR 연산자를 사용하여 이전 쿼리와 동일한 결과를 반환할 수 있음
+```
+
+**LIMIT clause**
+```
+쿼리에서 반환되는 행 수를 제한
+
+SELECT 문에서 선택적으로 사용할 수 있는 절
+
+row_count는 반환되는 행 수를 지정하는 양의 정수를 의미
+```
+```
+# 첫 번째부터 열 번째 데이터까지 rowid와 이름 조회하기
+SELECT rowid, first_name FROM users LIMIT 10;
+
+# 계좌 잔고가 가장 많은 10명의 이름과 계좌 잔고 조회하기
+SELECT first_name, balance FROM users ORDER BY balance DESC LIMIT 10;
+    - ORDER BY 절과 함께 사용하여 지정된 순서로 여러 행을 가져 올 수도 있음
+    - LIMIT 절에 지정된 행 수를 가져오기 전에 결과를 정렬하기 때문
+
+# 나이가 가장 어린 5명의 이름과 나이 조회하기
+SELECT first_name, age FROM users ORDER BY age LIMIT 5;
+```
+
+**OFFSET keyword**
+```
+LIMIT 절을 사용하면 첫 번째 데이터로부터 지정한 수 만큼의 데이터를 받아올 수 있지만, OFFSET과 함께 사용하면 특정 지정된 위치에서부터 데이터를 조회할 수 있음
+
+# 11번째부터 20번째 데이터의 rowid와 이름 조회하기
+SELECT rowid, first_name FROM users LIMIT 10 OFFSET 10;
+```
+
+### Grouping data
+- 특정 그룹으로 묶인 결과를 생성
+
+- 선택된 컬럼 값을 기준으로 데이터(행)들의 공통 값을 묶어서 결과로 나타냄
+
+- SELECT 문에서 선택적으로 사용가능한 절
+
+- SELECT 문의 FROM 절 뒤에 작성
+    - WHERE 절이 포함된 경우 WHERE 절 뒤에 작성해야 함
+
+- 각 그룹에 대해 MIN, MAX, SUM, COUNT 또는 AVG와 같은 집계 함수(aggregate function)를 적용하여 각 그룹에 대한 추가적인 정보를 제공할 수 있음
+```
+# 예시
+SELECT column_1, aggregate_function(column_2) FROM table_name GROUP BY column_1, column_2
+```
+
+**Aggregate function**
+```
+집계 함수
+
+값 집합의 최대값, 최소값, 평균, 합계 및 개수를 계산
+
+값 집합에 대한 계산을 수행하고 단일 값을 반환
+    - 여러 행으로부터 하나의 결과값을 반환하는 함수
+
+SELECT 문의 GROUP BY 절과 함께 종종 사용됨
+
+제공하는 함수 목록
+    - AVE(), COUNT(), MAX(), MIN(), SUM()
+
+AVG(), MAX(), MIN(), SUM()는 숫자를 기준으로 계산이 되어져야 하기 때문에 반드시 컬럼의 데이터 타입이 숫자(INTEGER)일 때만 사용 가능
+```
+```
+# users 테이블의 전체 행 수 조회하기
+SELECT COUNT(*) FROM users;
+
+# 나이가 30살 이상인 사람들의 평균 나이 조회하기
+SELECT AVG(age) FROM users WHERE age >= 30;
+```
+```
+GROUP BY 사용해보기
+
+# 각 지역별로 몇 명씩 살고 있는지 조회하기
+SELECT country FROM users GROUP BY country;
+    - '각 지역별'은 지역 별로 그룹을 나눌 필요가 있음을 의미함
+    - country 컬럼으로 그룹화
+
+# 몇 명씩 사는지 계산하기 위해서 그룹별로 포함되는 데이터의 수를 구함
+SELECT country, COUNT(*) FROM users GROUP BY country;
+    - Aggregation Function의 COUNT를 사용
+    - 각 지역별로 그룹이 나뉘어졌기 때문에  COUNT(*)는 지역별 데이터 개수를 세게 됨
+
+
+COUNT 참고 사항
+    - 이전 쿼리에서 COUNT(), COUNT(age), COUNT(last_name) 등 어떤 컬럼을 넣어도 결과는 같음
+    - 현재 쿼리에서 그룹화된 country를 기준으로 카운트 하는 것이기 때문에 어떤 컬럼을 카운트해도 전체 개수는 동일하기 때문
+```
+```
+# 각 성씨가 몇명씩 있는지 조회하기
+SELECT last_name, COUNT(*) FROM users GROUP BY last_name;
+
+SELECT last_name, COUNT(*) AS number_of_name FROM users GROUP BY last_name;
+    - AS 키워드를 사용해 컬럼명을 임시로 변경하여 조회할 수 있음
+
+# 인원이 가장 많은 성씨 순으로 조회하기
+SELECT last_name, COUNT(*) FROM users GROUP BY last_name ORDER BY COUNT(*) DESC;
+
+# 각 지역별 평균 나이 조회하기
+SELECT country, AVG(age) FROM users GROUP BY country;
+```
+
+### Changing data
+- 데이터를 삽입, 수정, 삭제하기
+    - INSERT
+    - UPDATE
+    - DELETE
+```
+# 사전 준비
+CREATE TABLE classmates (
+    name TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    address TEXT NOT NULL
+);
+```
+
+**INSERT statement**
+```
+새 행을 테이블에 삽입
+
+문법 규칙
+    1. 먼저 INSERT INTO 키워드 뒤에 데이터를 삽입할 테이블의 이름을 지정
+    2. 테이블 이름 뒤에 쉼표로 구분된 컬럼 목록을 추가
+        - 컬럼 목록은 선택 사항이지만 컬럼 목록을 포함하는 것이 권장됨
+    3. VALUES 키워드 뒤에 쉼표로 구분된 값 목록을 추가
+        - "만약 컬럼 목록을 생략할 경우 값 목록의 모든 컬럼에 대한 값을 지정해야 함"
+        - 값 목록의 값 개수는 컬럼 목록의 컬럼 개수와 같야야 함
+```
+```
+# 단일 행 삽입하기
+'INSERT INTO' classmates (name, age, address) 'VALUES' ('홍길동', 23, '서울');
+
+'INSERT INTO' classmates 'VALUES' ('홍길동', 23, '서울');
+    - 다음과 같이 작성할 수도 있음
+
+# 여러 행 삽입하기
+'INSERT INTO' classmates 'VALUES' ('김철수', 30, '경기', '이영미', 33, '강원', '박진성', 26, '전라', '최지수', 12, '충청', '정요한', 28, '경상');
+```
+
+**UPDATE statement**
+```
+테이블에 있는 기존 행의 데이터를 업데이트 한다.
+
+문법 규칙
+    1. UPDATE 절 이후에 업데이트할 테이블을 지정
+    2. SET 절에서 테이블의 각 컬럼에 대해 새 값을 설정
+    3. WHERE 절의 조건을 사용하여 업데이트할 행을 지정
+        - WHERE 절은 선택 사항이며, 생략하면 UPDATE 문은 테이블의 모든 행에 있는 데이터를 업데이트 함
+    4. 선택적으로 ORDER BY 및 LIMIT 절을 사용하여 업데이트할 행 수를 지정할 수도 있음
+```
+```
+# 2번 데이터의 이름을 '김철수한무두루미', 주소를 '제주도'로 수정하기
+'UPDATE classmates 'SET' name='김철수한무두루미', address='제주도' WHERE rowid = 2;
+```
+
+**DELETE statement**
+```
+테이블에서 행을 제거
+
+테이블의 한 행, 여러 행 및 모든 행을 삭제할 수 있음
+
+문법 규칙
+    1. DELETE FROM 키워드 뒤에 행을 제거하려는 테이블의 이름을 지정
+    2. WHERE 절에 검색 조건을 추가하여 제거할 행을 식별
+        - WHERE 절은 선택 사항이며, 생략하면 DELETE 문은 테이블의 모든 행을 삭제
+    3. 선택적으로 ORDER BY 및 LIMIT 절을 사용하여 삭제할 행 수를 지정할 수도 있음
+```
+```
+# 5번 데이터 삭제하기
+'DELETE FROM' classmates WHERE rowid = '5';
+
+# 삭제된 것 확인하기
+'SELECT' rowid, * 'FROM' classmates;
+
+# 이름에 '영'이 포함되는 데이터 삭제하기
+DELETE FROM classmates WHERE name LIKE '%영%';
+
+# 테이블의 모든 데이터 삭제하기
+DELETE FROM classmates;
+```
+
+# 마무리
+- Database
+    - RDB
+
+- SQL
+
+- DDL
+    - CREATE TABLE
+        - Data Type
+        - Constraints
+    - ALTER TABLE
+    - DROP TABLE
+
+- DML
+    - SELECT
+        - SELECT DISTINCT
+    - ORDER BY
+    - WHERE
+        - LIKE, IN, BETWEEN
+    - LIMIT, OFFSET
+    - GROUP BY
+        - Aggregate Function
+    - INSERT / UPDATE / DELETE
+
+### 데이터  구조화의 중요성
+- 다루고자 하는 데이터를 구조화해서 저장하면 데이터의 가공 및 확장이 용이
+- 모든 서비스는 데이터를 효율적으로 다루는 것이 필수적
+    - 예를 들어 빅데이터, 인공지능과 같은 대규모 데이터로부터 의미있는 분석 결과를 뽑아낼 수 있음
