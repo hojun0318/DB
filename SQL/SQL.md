@@ -154,3 +154,96 @@
     2. FROM table_name
 
 # DDL
+```
+Data definition
+
+SQL 데이터 정의 언어를 사용하여 테이블 데이터베이스 개체를 만드는 방법을 학습
+
+DDL은 테이블 구조를 관리
+    - CREATE, ALTER, DROP
+```
+
+# CREATE TABLE
+```
+CREATE TABLE contacts (
+    name TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    email TEXT NOT NULL UNIQUE
+);
+```
+
+### SQLite Data Types
+1. NULL
+    - NULL value
+    - 정보가 없거나 알 수 없음을 의미(missing informagion or unknown)
+
+2. INTEGER
+    - 정수
+    - 크기에 따라 0, 1, 2, 3, 4, 6 또는 8바이트와 같으 가변 크기를 가짐
+
+3. REAL
+    - 실수
+    - 8바이트 부동 소수점을 사용하는 10진수 값이 있는 실수
+
+4. TEXT
+    - 문자 데이터
+
+5. BLOB(Binary Large Object)
+    - 입력된 그대로 저장된 데이터 덩어리 (대용 타입 없음)
+    - 바이너리 등 멀티미디어 파일
+    - 예시
+        - 이미지 데이터
+
+### Constraints
+```
+제약조건
+
+입력하는 자료에 대한 제약을 정함
+
+제약에 맞지 않다면 입력이 거부됨
+
+사용자가 원하는 조건의 데이터만 유지하기 위한 즉, 데이터의 무결성을 유지하기 위한 보편적인 방법으로 테이블의 특정 컬럼에 설정하는 제약
+```
+
+### 데이터 무결성
+```
+데이터 베이스 내의 데이터에 대한 정확성, 일관성을 보장하기 위해 데이터 변경 혹은 수정 시 여러 제한을 두어 데이터의 정확성을 보증하는 것
+    - 무결성이란 데이터의 정확성, 일관성을 나타냄
+
+데이터베이스에 저장된 데이터의 무결성을 보장하고 데이터베이스의 상태를 일관되게 유지하는 것이 목적
+```
+
+### Contraints 종류
+1. NOT NULL
+    - 컬럼이 NULL 값을 허용하지 않도록 지정
+    - 기본적으로 테이블의 모든 컬럼은 NOT NULL 제약 조건을 명시적으로 사용하는 경우를 제외하고는 NULL 값을 허용함
+
+2. UNIQUE
+    - 컬럼의 모든 값이 서로 구별되거나 고유한 값이 되도록 함
+
+3. PRIMARY KEY
+    - 테이블에서 행의 고유성을 식별하는 데 사용되는 컬럼
+    - 각 테이블에는 하나의 기본 키만 있음
+    - 암시적으로 NOT NULL 제약 조건이 포함되어 있음
+```
+# 예시
+
+CREATE TABLE table_name (
+    id INTEGER PRIMARY KEY,
+);
+
+#주의 : INTEGER 타입에만 사용가능 (INT BIGINT 등 불가능)
+```
+
+4. AUTOINCREMENT
+    - 사용되지 않은 값이나 이전에 삭제된 행의 값을 재사용하는 것을 방지
+    - INTEGER PRIMARY KEY 다음에 작성하면 해당 rowid를 다시 재사용하지 못하도록 함
+```
+# 예시
+
+CREATE TABLE table_name (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+);
+```
+
+# ALTER TABLE
