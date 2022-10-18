@@ -10,7 +10,7 @@ source venv/Scripts/activate
 
 pip install -r requirements.txt
 
-django-admin startprojects '생성할 프로젝트 이름' .
+django-admin startproject '생성할 프로젝트 이름' .
 
 python manage.py startapp '생성할 앱 이름'
 
