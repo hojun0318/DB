@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from movies.models import Movie, Comment
 from movies.forms import MovieForm, CommentForm
 from django.shortcuts import render, redirect
@@ -99,20 +100,38 @@ def comments_delete(request, movie_pk, comment_pk):
     return redirect('movies:detail', movie_pk)
 
 
+# @require_POST
+# def likes(request, movie_pk):
+#     if request.user.is_authenticated:
+#         movie = Movie.objects.get(pk=movie_pk)
+        
+#         # 현재 게시글에 좋아요를 누른 유저중에 현재 좋아요를 요청하는 유저를 검색해서 존재하는지를 확인
+#         if movie.like_users.filter(pk=request.user.pk).exists():
+
+#         # 현재 게시글에 좋아요를 누른 유저 목록에 현재 좋아요를 요청하는 유저가 있는지 없는지 확인
+#         # if request.user in movie.like_users.all():
+#             # 좋아요 취소 (remove)
+#             movie.like_users.remove(request.user)
+#         else:
+#             # 좋아요 추가 (add)
+#             movie.like_users.add(request.user)
+#         return redirect('movies:index')
+#     return redirect('accounts:login')
+
 @require_POST
 def likes(request, movie_pk):
     if request.user.is_authenticated:
         movie = Movie.objects.get(pk=movie_pk)
-        
-        # 현재 게시글에 좋아요를 누른 유저중에 현재 좋아요를 요청하는 유저를 검색해서 존재하는지를 확인
-        if movie.like_users.filter(pk=request.user.pk).exists():
 
-        # 현재 게시글에 좋아요를 누른 유저 목록에 현재 좋아요를 요청하는 유저가 있는지 없는지 확인
-        # if request.user in movie.like_users.all():
-            # 좋아요 취소 (remove)
+        if movie.like_users.filter(pk=request.user.pk).exists():
             movie.like_users.remove(request.user)
+            is_liked = False
         else:
-            # 좋아요 추가 (add)
             movie.like_users.add(request.user)
-        return redirect('movies:index')
+            is_liked = True
+        context = {
+            'is_liked': is_liked,
+            'likeusers_count': movie.like_users.count(),
+        }
+        return JsonResponse(context)
     return redirect('accounts:login')

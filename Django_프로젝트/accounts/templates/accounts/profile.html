@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ person.username }}'s PROFILE</h1>
+
+
+    <div>
+      FOLLOWER : <span id="followers-count">{{ person.followersall|length }}</span> /
+      FOLLOWING : <span id="followings-count">{{ person.followings.all|length }}</span>
+        {% comment %} FOLLOWER : {{ person.followers.all|length }}
+        {% if person.followers %}
+          {% for follower in person.followers.all %}
+            <b>'{{follower}}'</b>
+          {% endfor %}
+        {% endif %} 
+        / FOLLOWING : {{ person.followings.all|length }}
+        {% if person.followings %}
+          {% for following in person.followings.all %}
+            <b>'{{following}}'</b>
+          {% endfor %}
+        {% endif %} {% endcomment %}
+        
+        {% if request.user != person %}
+        <div>
+          <form id="follow-form" data-user-id="{{ person.pk }}">
+            {% csrf_token %}
+            {% if request.user in person.followers.all %}
+                <input id="Unfollow_btn" type="submit" class="btn btn-danger" value="UNFOLLOW">
+            {% else %}
+                <input id="Follow_btn" type="submit" class="btn btn-success" value="FOLLOW">
+            {% endif %}
+          </form>
+        </div>
+            {% comment %} <form action="{% url 'accounts:follow' person.pk %}" method="POST">
+                {% csrf_token %}
+                {% if request.user in person.followers.all %}
+                    <input type="submit" class="btn btn-danger" value="UNFOLLOW">
+                {% else %}
+                    <input type="submit" class="btn btn-success" value="FOLLOW">
+                {% endif %}
+            </form> {% endcomment %}
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div>
+      <h2>{{ person.username }}'s POSTS</h2>
+        {% for movie in person.movie_set.all %}
+          <div>[{{ movie.title }}, <b>{{ movie.like_users.all|length }} likes ]</b></div> 
+        {% endfor %}
+    {% comment %} {% else %}
+      <h2>{{ person.username }}'s POSTS</h2>
+        {% for movie in person.movie_set.all %}
+          <div>{{ movie.title }}</div>
+        {% endfor %}  {% endcomment %}
+    </div>
+
+    <hr>
+
+    <div>
+      <h2>{{ person.username }}'s COMMENTS</h2>
+        {% for comment in person.comment_set.all %}
+          <div>{{ comment.content }}</div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <div>
+      <h2>{{ person.username }}, POSTS THAT YOU CLICKED "LIKE"</h2>
+        {% for movie in person.like_movies.all %}
+          <div>{{ movie.title }}</div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <a href="{% url 'movies:index' %}">
+        <button type="button" class="btn btn-warning">BACK</button>
+    </a>
+{% endblock content %}
+
+{% block script %}
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  
+  <script>
+    const form = document.querySelector('#follow-form')
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault()
+      const userId = event.target.dataset.userId
+
+      axios({
+        method: 'post',
+        url: `/accounts/${userId}/follow/`,
+        headers: {'X-CSRFToken': csrftoken,}
+      })
+      .then((response) => {
+        const isFollowed = response.data.is_followed
+        const followBtn = document.querySelector('#follow-form > input[type=submit]')
+        if (isFollowed === true) {
+          followBtn.value = 'UNFOLLOW'
+          followBtn.setAttribute("style", "background:red; border-color:red")
+        } else {
+          followBtn.value = 'FOLLOW'
+          followBtn.setAttribute("style", "background:green; border-color:green")
+        }
+        const followersCountTag = document.querySelector('#followers-count')
+        const followingsCountTag = document.querySelector('#followings-count')
+        const followersCount = response.data.followers_count
+        const followingsCount = response.data.followings_count
+        followersCountTag.innerText = followersCount
+        followingsCountTag.innerText = followingsCount
+      })
+      .catch((error) => {
+        console.log(error.response)
+      })
+    })
+  </script>
+{% endblock script %}
