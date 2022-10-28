@@ -41,9 +41,12 @@
           <li>
             {{ comment.user }} - {{ comment.content }}
             {% if request.user == comment.user %}
-              <form action="{% url 'movies:comments_delete' movie.pk comment.pk %}" method="POST">
+              <form action="{% url 'movies:comments_delete' movie.pk comment.pk %}" method="POST" style="display:inline">
                 {% csrf_token %}
-                <input type="submit" class="btn btn-danger" value="DELETE">
+                <button class="btn btn-link text-secondary">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+                {% comment %} <input type="submit" class="btn btn-danger" value="DELETE"> {% endcomment %}
               </form>
               {% endif %}
           </li>
@@ -56,7 +59,10 @@
         <form action="{% url 'movies:comments_create' movie.pk %}" method="POST">
           {% csrf_token %}
           {{ comment_form }}
-          <input type="submit" class="btn btn-success" value="SUBMIT">
+          {% comment %} <input type="submit" class="btn btn-success" value="SUBMIT"> {% endcomment %}
+          <button class="btn btn-link text-secondary">
+            <i class="fa-regular fa-comment-arrow-up"></i>
+          </button>
         </form>
       {% else %}
         <a href="{% url 'accounts:login' %}">LOGIN to write a comment.</a>

@@ -39,7 +39,7 @@
           <h5 class='text-center' style='font-weight: bold'>{{ movie.title }}</h5>
           <h6 class='text-center' style='font-weight: bold'>{{ movie.genre }} / {{ movie.score }}</h6>
           
-          <form class="like-forms" data-movie-id="{{ movie.pk }}">
+          <form class="like-forms" data-movie-id="{{ movie.pk }}" style="display:inline">
           {% comment %} <form action="{% url 'movies:likes' movie.pk %}" method="POST" id="like-form-{{movie.pk}}"> {% endcomment %}
             {% csrf_token %}
             {% if request.user in movie.like_users.all %}
@@ -54,10 +54,13 @@
               </button>
             {% endif %}
             <p>
-              <span id="like-count-{{ movie.pk }}">{{ movie.like_users.all|length }} </span> likes
+              <span id="like-count-{{ movie.pk }}">{{ movie.like_users.all|length }}</span> likes
             </p>
             {% comment %} <p>{{ movie.like_users.all|length }} likes</p> {% endcomment %}
           </form>
+          <button class="btn btn-link text-secondary">
+            <i class="fa-regular fa-comment-dots"></i>
+          </button>
           <p class='text-center' style='font-weight: bold'><b>Writer : <a href="{% url 'accounts:profile' movie.user.username %}">{{ movie.user }}</a></b></p>
         </div>
       </div>
