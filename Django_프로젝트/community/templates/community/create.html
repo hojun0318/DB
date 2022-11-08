@@ -2,11 +2,14 @@
 
 {% block content %}
   <h1 class="text-center">CREATE</h1>
-  <form action="" method="POST">
+  <form action="{% url 'community:create' %}" method="POST">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit">
+    <input type="submit" class="btn btn-dark" value="COMPLETE">
   </form>
   <hr>
-  <a href="{% url 'community:index' %}">[back]</a>
+  <a href={% url 'community:index'%}>
+    <button type="button" class="btn btn-warning">BACK</button>
+  </a>
+
 {% endblock %}

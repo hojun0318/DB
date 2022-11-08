@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +8,18 @@
   <title>Document</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/test.css' %}"
 </head>
 
 <body class='container'>
   <nav class="navbar navbar-light bg-light">
     <div class="container-fluid">
       <a class="navbar-brand" href="{% url 'movies:index' %}">
-        <img src="https://user-images.githubusercontent.com/89068148/162368167-220a2ca2-6df9-4473-b89b-31981a62332b.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
-        SSAFY WORLD!
-        <h6 class="container d-flex col">환영합니다. {{ user }}님!</h6>
+        <div>
+          <img src="https://user-images.githubusercontent.com/89068148/162368167-220a2ca2-6df9-4473-b89b-31981a62332b.png" alt="" width="30" height="24" class="d-inline-block align-text-top">
+          <h3 style="display:inline">SSAFY MOVIE WORLD!</h3>
+        </div>
+        <h6 class="container d-flex col fw-bold">환영합니다. {{ user }}님!</h6>
       </a>
       <form class="d-flex">
         <input class="form-control me-2" type="search" placeholder="제목을 입력하세요." aria-label="search">
@@ -75,5 +79,54 @@
     {% endblock script %}
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+
+ <!-- Dark Mode🌙-->
+
+                <!-- 토글을 이용한 스위치 기능 -->
+  <button class="switch" onclick="toggleTheme()">
+    <svg class="sun" fill="none" stroke="#fbb046" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="feather feather-sun" viewBox="0 0 24 24"><defs/><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <svg class="moon" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="feather feather-moon" viewBox="0 0 24 24"><defs/><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+  </button>
 </body>
+
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+  // 토글을 이용한 스위치 기능
+  $(document).ready(function(){
+    $('a').click(function(){
+      $('a').removeClass("active");
+      $(this).addClass("active");
+  });
+  $('button').click(function(){
+     $('body').toggleClass('dark');
+     });
+  });
+</script>
+
+<script>
+  // 테마의 컬러스킴을 셋팅할 수 있습니다.
+  function setTheme(themeName) {
+      localStorage.setItem('container', themeName);
+      document.documentElement.className = themeName;
+  }
+
+  // 라이트 모드와 다크 모드 사이의 토글 세션(로컬 스토리지)
+  function toggleTheme() {
+      if (localStorage.getItem('container') === 'container-dark') {
+          setTheme('container');
+      } else {
+          setTheme('container-dark');
+      }
+  }
+
+  // 초기 로드 시 테마를 설정하는 즉시 호출되는 기능
+  (function () {
+      if (localStorage.getItem('theme') === 'container-dark') {
+          setTheme('container-dark');
+      } else {
+          setTheme('container');
+      }
+  })();
+</script>
+  <!-- //Dark Mode🌙 -->
 </html>

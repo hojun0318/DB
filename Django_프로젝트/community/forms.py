@@ -13,4 +13,12 @@ class CommentForm(forms.ModelForm):
 
     class Meta:
         model = ReviewComment
-        exclude = ['review', 'user']
+        exclude = ('review', 'user')
+    
+    content = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                'class': 'form-control',
+            }
+        )
+    )

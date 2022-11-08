@@ -59,10 +59,7 @@
         <form action="{% url 'movies:comments_create' movie.pk %}" method="POST">
           {% csrf_token %}
           {{ comment_form }}
-          {% comment %} <input type="submit" class="btn btn-success" value="SUBMIT"> {% endcomment %}
-          <button class="btn btn-link text-secondary">
-            <i class="fa-regular fa-comment-arrow-up"></i>
-          </button>
+          <input type="submit" class="btn btn-success" value="SUBMIT">
         </form>
       {% else %}
         <a href="{% url 'accounts:login' %}">LOGIN to write a comment.</a>
